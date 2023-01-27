@@ -4,6 +4,7 @@ import (
 	"anki-cli/anki"
 	"anki-cli/oxford"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"io"
@@ -29,7 +30,10 @@ func main() {
 				Usage:   "add a new card info to file",
 				Action: func(c *cli.Context) error {
 					q := c.Args().First()
-					resp := queryWordToOxford(appID, appKey, q)
+					resp, err := queryWordToOxford(appID, appKey, q)
+					if err != nil {
+						return err
+					}
 					cards := mappingToCard(resp)
 					for _, c := range cards {
 						downloadAudio(c.SoundAddr, ankiMedia, c.SoundName)
@@ -47,7 +51,7 @@ func main() {
 	}
 }
 
-func queryWordToOxford(id, key, word string) oxford.Response {
+func queryWordToOxford(id, key, word string) (oxford.Response, error) {
 	req, _ := http.NewRequest("GET", "https://od-api.oxforddictionaries.com/api/v2/words/en-gb", nil)
 	q := req.URL.Query()
 	q.Add("q", word)
@@ -57,12 +61,23 @@ func queryWordToOxford(id, key, word string) oxford.Response {
 	req.Header.Add("app_id", id)
 	req.Header.Add("app_key", key)
 
-	res, _ := http.DefaultClient.Do(req)
+	res, err := http.DefaultClient.Do(req)
 	defer res.Body.Close()
-
 	var rsp oxford.Response
-	_ = json.NewDecoder(res.Body).Decode(&rsp)
-	return rsp
+
+	if err != nil {
+		return rsp, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return rsp, errors.New("no matched word")
+	}
+
+	err = json.NewDecoder(res.Body).Decode(&rsp)
+	if err != nil {
+		return rsp, err
+	}
+	return rsp, nil
 }
 
 func downloadAudio(url string, filepath, filename string) {
