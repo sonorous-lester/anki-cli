@@ -1,15 +1,20 @@
 package main
 
 import (
+	"anki-cli/oxford"
+	"encoding/json"
 	"fmt"
 	"github.com/urfave/cli/v2"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 )
 
 func main() {
+	appID := os.Getenv("OXFORD_APP_ID")
+	appKey := os.Getenv("OXFORD_APP_KEY")
 	app := &cli.App{
 		Name:  "ankictl",
 		Usage: "Make creating Anki cards more easier",
@@ -23,6 +28,7 @@ func main() {
 					if !fileExisting {
 						createNewFile()
 					}
+					queryWordToOxford(appID, appKey, "swimming")
 					fmt.Printf("Create a new \"%s\" info in to file.\n", c.Args().First())
 					return nil
 				},
@@ -36,7 +42,7 @@ func main() {
 }
 
 func checkFile() bool {
-	file := "20220127.txt"
+	file := "2023-01-27.txt"
 	path := os.Getenv("HOME") + "/Desktop"
 	fullPath := filepath.Join(path, file)
 	fmt.Printf("fullpath is %s\n", fullPath)
@@ -65,12 +71,31 @@ func createNewFile() {
 	fmt.Println("File created: ", fullPath)
 }
 
+func queryWordToOxford(id, key, word string) {
+	req, _ := http.NewRequest("GET", "https://od-api.oxforddictionaries.com/api/v2/words/en-gb", nil)
+	q := req.URL.Query()
+	q.Add("q", word)
+	q.Add("fields", "definitions,examples,pronunciations")
+	req.URL.RawQuery = q.Encode()
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("app_id", id)
+	req.Header.Add("app_key", key)
+
+	res, _ := http.DefaultClient.Do(req)
+	defer res.Body.Close()
+
+	var rsp oxford.Response
+	_ = json.NewDecoder(res.Body).Decode(&rsp)
+	fmt.Printf("rsp: %+v", rsp)
+}
+
 // Get the word
 // Done!
 // Check file is existing if not create a new file.
 // Done!
 // Send request to oxford
-// Download audio to specific folder
+// Done!
 // Mapping the response to anki struct
+// Download audio to specific folder
 // Writing anki struct to file
 // Response Message
