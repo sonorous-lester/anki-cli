@@ -6,6 +6,7 @@ type Card struct {
 	IPA          string
 	Sound        string
 	SoundAddr    string
+	SoundName    string
 	Definition   string
 	Example      string
 }

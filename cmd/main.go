@@ -126,13 +126,13 @@ func mappingToCard(resp oxford.Response) []anki.Card {
 			PartOfSpeech: v.LexicalCategory.Id,
 			IPA:          pronuc.PhoneticSpelling,
 			Sound:        fmt.Sprintf("[sound:%s_%s.mp3]", v.Text, v.LexicalCategory.Id),
+			SoundName:    fmt.Sprintf("%s_%s", v.Text, v.LexicalCategory.Id),
 			SoundAddr:    pronuc.AudioFile,
 			Definition:   sense.Definitions[0],
 			Example:      sense.Examples[0].Text,
 		}
 		out = append(out, c)
 	}
-	fmt.Printf("cards: %+v\n", out)
 	return out
 }
 
@@ -145,5 +145,6 @@ func mappingToCard(resp oxford.Response) []anki.Card {
 // Download audio to specific folder
 // Done!
 // Mapping the response to anki struct
+// Done!
 // Writing anki struct to file
 // Response Message
