@@ -28,12 +28,11 @@ func main() {
 				Usage:   "add a new card info to file",
 				Action: func(c *cli.Context) error {
 					q := c.Args().First()
-					fileExisting := checkFile()
-					if !fileExisting {
-						createNewFile()
-					}
 					resp := queryWordToOxford(appID, appKey, q)
-					mappingToCard(resp)
+					cards := mappingToCard(resp)
+					for _, c := range cards {
+						writeToFile(c.AnkiString())
+					}
 					fmt.Printf("Create a new \"%s\" info in to file.\n", q)
 					return nil
 				},
@@ -136,6 +135,23 @@ func mappingToCard(resp oxford.Response) []anki.Card {
 	return out
 }
 
+func writeToFile(s string) {
+	desktop := os.Getenv("HOME") + "/Desktop/"
+	currentTime := time.Now()
+	fileName := currentTime.Format("2006-01-02") + ".txt"
+	fullPath := filepath.Join(desktop, fileName)
+	file, err := os.OpenFile(fullPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(s + "\n")
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Get the word
 // Done!
 // Check file is existing if not create a new file.
@@ -147,4 +163,5 @@ func mappingToCard(resp oxford.Response) []anki.Card {
 // Mapping the response to anki struct
 // Done!
 // Writing anki struct to file
+// Done!
 // Response Message
