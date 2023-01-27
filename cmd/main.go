@@ -17,7 +17,8 @@ import (
 func main() {
 	appID := os.Getenv("OXFORD_APP_ID")
 	appKey := os.Getenv("OXFORD_APP_KEY")
-	//ankiMedia := os.Getenv("ANKI_MEDIA")
+	ankiFile := os.Getenv("ANKI_FILE")
+	ankiMedia := os.Getenv("ANKI_MEDIA")
 	app := &cli.App{
 		Name:  "ankictl",
 		Usage: "Make creating Anki cards more easier",
@@ -43,36 +44,6 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func checkFile() bool {
-	file := "2023-01-27.txt"
-	path := os.Getenv("HOME") + "/Desktop"
-	fullPath := filepath.Join(path, file)
-	fmt.Printf("fullpath is %s\n", fullPath)
-
-	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		fmt.Printf("file %s does not exist in %s\n", file, path)
-		return false
-	} else {
-		fmt.Printf("file %s exists in %s\n", file, path)
-		return true
-	}
-}
-
-func createNewFile() {
-	desktop := os.Getenv("HOME") + "/Desktop/"
-	currentTime := time.Now()
-	fileName := currentTime.Format("2006-01-02") + ".txt"
-	fullPath := filepath.Join(desktop, fileName)
-
-	f, err := os.Create(fullPath)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer f.Close()
-	fmt.Println("File created: ", fullPath)
 }
 
 func queryWordToOxford(id, key, word string) oxford.Response {
@@ -151,17 +122,3 @@ func writeToFile(s string) {
 		panic(err)
 	}
 }
-
-// Get the word
-// Done!
-// Check file is existing if not create a new file.
-// Done!
-// Send request to oxford
-// Done!
-// Download audio to specific folder
-// Done!
-// Mapping the response to anki struct
-// Done!
-// Writing anki struct to file
-// Done!
-// Response Message
