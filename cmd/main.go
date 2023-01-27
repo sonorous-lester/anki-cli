@@ -5,6 +5,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func main() {
@@ -17,6 +18,7 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "add a new card info to file",
 				Action: func(c *cli.Context) error {
+					checkFile()
 					fmt.Printf("Create a new \"%s\" info in to file.\n", c.Args().First())
 					return nil
 				},
@@ -26,6 +28,21 @@ func main() {
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func checkFile() bool {
+	file := "hello.txt"
+	path := os.Getenv("HOME") + "/Desktop"
+	fullPath := filepath.Join(path, file)
+	fmt.Printf("fullpath is %s\n", fullPath)
+
+	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
+		fmt.Printf("file %s does not exist in %s\n", file, path)
+		return false
+	} else {
+		fmt.Printf("file %s exists in %s\n", file, path)
+		return true
 	}
 }
 
