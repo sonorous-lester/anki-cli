@@ -14,5 +14,5 @@ type Card struct {
 }
 
 func (c Card) AnkiString() string {
-	return fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.Text, c.PartOfSpeech, c.IPA, c.Sound, c.Definition, c.Example)
+	return fmt.Sprintf("%s;%s;%s;%s;%s;%s", c.Definition, c.Text, c.PartOfSpeech, c.IPA, c.Sound, c.Example)
 }
