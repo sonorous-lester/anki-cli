@@ -1,6 +1,7 @@
 package main
 
 import (
+	"anki-cli/anki"
 	"anki-cli/oxford"
 	"encoding/json"
 	"fmt"
@@ -112,6 +113,26 @@ func downloadAudio(url string, filepath, filename string) {
 	if err != nil {
 		fmt.Printf("Download file error\n")
 	}
+}
+
+func mappingToCard(resp oxford.Response) []anki.Card {
+	var out []anki.Card
+	for _, v := range resp.Results[0].LexicalEntries {
+		entry := v.Entries[0]
+		pronuc := entry.Pronunciations[0]
+		sense := entry.Senses[0]
+		c := anki.Card{
+			Text:         v.Text,
+			PartOfSpeech: v.LexicalCategory.Id,
+			IPA:          pronuc.PhoneticSpelling,
+			Sound:        fmt.Sprintf("[sound:%s_%s.mp3]", v.Text, v.LexicalCategory.Id),
+			SoundAddr:    pronuc.AudioFile,
+			Definition:   sense.Definitions[0],
+			Example:      sense.Examples[0].Text,
+		}
+		out = append(out, c)
+	}
+	return out
 }
 
 // Get the word
