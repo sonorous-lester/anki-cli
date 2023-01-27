@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 func main() {
@@ -18,7 +19,10 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "add a new card info to file",
 				Action: func(c *cli.Context) error {
-					checkFile()
+					fileExisting := checkFile()
+					if !fileExisting {
+						createNewFile()
+					}
 					fmt.Printf("Create a new \"%s\" info in to file.\n", c.Args().First())
 					return nil
 				},
@@ -32,7 +36,7 @@ func main() {
 }
 
 func checkFile() bool {
-	file := "hello.txt"
+	file := "20220127.txt"
 	path := os.Getenv("HOME") + "/Desktop"
 	fullPath := filepath.Join(path, file)
 	fmt.Printf("fullpath is %s\n", fullPath)
@@ -46,9 +50,25 @@ func checkFile() bool {
 	}
 }
 
+func createNewFile() {
+	desktop := os.Getenv("HOME") + "/Desktop/"
+	currentTime := time.Now()
+	fileName := currentTime.Format("2006-01-02") + ".txt"
+	fullPath := filepath.Join(desktop, fileName)
+
+	f, err := os.Create(fullPath)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	fmt.Println("File created: ", fullPath)
+}
+
 // Get the word
 // Done!
 // Check file is existing if not create a new file.
+// Done!
 // Send request to oxford
 // Download audio to specific folder
 // Mapping the response to anki struct
