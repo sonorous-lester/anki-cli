@@ -9,11 +9,18 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:  "Anki-test",
+		Name:  "ankictl",
 		Usage: "Make creating Anki cards more easier",
-		Action: func(c *cli.Context) error {
-			fmt.Printf("Hello %q", c.Args().Get(0))
-			return nil
+		Commands: []*cli.Command{
+			{
+				Name:    "create",
+				Aliases: []string{"c"},
+				Usage:   "add a new card info to file",
+				Action: func(c *cli.Context) error {
+					fmt.Printf("Create a new \"%s\" info in to file.\n", c.Args().First())
+					return nil
+				},
+			},
 		},
 	}
 
@@ -21,3 +28,12 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
+// Get the word
+// Done!
+// Check file is existing if not create a new file.
+// Send request to oxford
+// Download audio to specific folder
+// Mapping the response to anki struct
+// Writing anki struct to file
+// Response Message
