@@ -17,7 +17,7 @@ import (
 func main() {
 	appID := os.Getenv("OXFORD_APP_ID")
 	appKey := os.Getenv("OXFORD_APP_KEY")
-	ankiMedia := os.Getenv("ANKI_MEDIA")
+	//ankiMedia := os.Getenv("ANKI_MEDIA")
 	app := &cli.App{
 		Name:  "ankictl",
 		Usage: "Make creating Anki cards more easier",
@@ -27,13 +27,14 @@ func main() {
 				Aliases: []string{"c"},
 				Usage:   "add a new card info to file",
 				Action: func(c *cli.Context) error {
+					q := c.Args().First()
 					fileExisting := checkFile()
 					if !fileExisting {
 						createNewFile()
 					}
-					resp := queryWordToOxford(appID, appKey, "swimming")
-					downloadAudio(resp.Results[0].LexicalEntries[0].Entries[0].Pronunciations[0].AudioFile, ankiMedia, "swimming")
-					fmt.Printf("Create a new \"%s\" info in to file.\n", c.Args().First())
+					resp := queryWordToOxford(appID, appKey, q)
+					mappingToCard(resp)
+					fmt.Printf("Create a new \"%s\" info in to file.\n", q)
 					return nil
 				},
 			},
@@ -132,6 +133,7 @@ func mappingToCard(resp oxford.Response) []anki.Card {
 		}
 		out = append(out, c)
 	}
+	fmt.Printf("cards: %+v", out)
 	return out
 }
 
