@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/urfave/cli/v2"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 func main() {
 	appID := os.Getenv("OXFORD_APP_ID")
 	appKey := os.Getenv("OXFORD_APP_KEY")
+	ankiMedia := os.Getenv("ANKI_MEDIA")
 	app := &cli.App{
 		Name:  "ankictl",
 		Usage: "Make creating Anki cards more easier",
@@ -28,7 +30,8 @@ func main() {
 					if !fileExisting {
 						createNewFile()
 					}
-					queryWordToOxford(appID, appKey, "swimming")
+					resp := queryWordToOxford(appID, appKey, "swimming")
+					downloadAudio(resp.Results[0].LexicalEntries[0].Entries[0].Pronunciations[0].AudioFile, ankiMedia, "swimming")
 					fmt.Printf("Create a new \"%s\" info in to file.\n", c.Args().First())
 					return nil
 				},
@@ -71,7 +74,7 @@ func createNewFile() {
 	fmt.Println("File created: ", fullPath)
 }
 
-func queryWordToOxford(id, key, word string) {
+func queryWordToOxford(id, key, word string) oxford.Response {
 	req, _ := http.NewRequest("GET", "https://od-api.oxforddictionaries.com/api/v2/words/en-gb", nil)
 	q := req.URL.Query()
 	q.Add("q", word)
@@ -87,6 +90,28 @@ func queryWordToOxford(id, key, word string) {
 	var rsp oxford.Response
 	_ = json.NewDecoder(res.Body).Decode(&rsp)
 	fmt.Printf("rsp: %+v", rsp)
+	return rsp
+}
+
+func downloadAudio(url string, filepath, filename string) {
+	fullPath := fmt.Sprintf("%s/%s.mp3", filepath, filename)
+	file, err := os.Create(fullPath)
+	if err != nil {
+		fmt.Printf("Create file error\n")
+		return
+	}
+	defer file.Close()
+
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Printf("Download file error\n")
+		return
+	}
+
+	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		fmt.Printf("Download file error\n")
+	}
 }
 
 // Get the word
@@ -95,7 +120,8 @@ func queryWordToOxford(id, key, word string) {
 // Done!
 // Send request to oxford
 // Done!
-// Mapping the response to anki struct
 // Download audio to specific folder
+// Done!
+// Mapping the response to anki struct
 // Writing anki struct to file
 // Response Message
