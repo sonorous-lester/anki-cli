@@ -91,7 +91,6 @@ func queryWordToOxford(id, key, word string) oxford.Response {
 
 	var rsp oxford.Response
 	_ = json.NewDecoder(res.Body).Decode(&rsp)
-	fmt.Printf("rsp: %+v", rsp)
 	return rsp
 }
 
@@ -133,7 +132,7 @@ func mappingToCard(resp oxford.Response) []anki.Card {
 		}
 		out = append(out, c)
 	}
-	fmt.Printf("cards: %+v", out)
+	fmt.Printf("cards: %+v\n", out)
 	return out
 }
 
