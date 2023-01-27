@@ -32,7 +32,8 @@ func main() {
 					resp := queryWordToOxford(appID, appKey, q)
 					cards := mappingToCard(resp)
 					for _, c := range cards {
-						writeToFile(c.AnkiString())
+						downloadAudio(c.SoundAddr, ankiMedia, c.SoundName)
+						writeToFile(ankiFile, c.AnkiString())
 					}
 					fmt.Printf("Create a new \"%s\" info in to file.\n", q)
 					return nil
@@ -106,11 +107,9 @@ func mappingToCard(resp oxford.Response) []anki.Card {
 	return out
 }
 
-func writeToFile(s string) {
-	desktop := os.Getenv("HOME") + "/Desktop/"
-	currentTime := time.Now()
-	fileName := currentTime.Format("2006-01-02") + ".txt"
-	fullPath := filepath.Join(desktop, fileName)
+func writeToFile(filePath, s string) {
+	fileName := time.Now().Format("2006-01-02") + ".txt"
+	fullPath := filepath.Join(filePath, fileName)
 	file, err := os.OpenFile(fullPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
