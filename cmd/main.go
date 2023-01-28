@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -80,7 +81,11 @@ func queryWordToOxford(id, key, word string) (oxford.Response, error) {
 	return rsp, nil
 }
 
-func downloadAudio(url string, filepath, filename string) {
+func downloadAudio(u string, filepath, filename string) {
+	if _, err := url.Parse(u); err != nil {
+		return
+	}
+
 	fullPath := fmt.Sprintf("%s/%s.mp3", filepath, filename)
 	file, err := os.Create(fullPath)
 	if err != nil {
@@ -89,7 +94,7 @@ func downloadAudio(url string, filepath, filename string) {
 	}
 	defer file.Close()
 
-	resp, err := http.Get(url)
+	resp, err := http.Get(u)
 	if err != nil {
 		fmt.Printf("Download file error\n")
 		return
