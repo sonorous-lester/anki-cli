@@ -39,7 +39,7 @@ func main() {
 						downloadAudio(c.SoundAddr, ankiMedia, c.SoundName)
 						writeToFile(ankiFile, c.AnkiString())
 					}
-					fmt.Printf("Create a new \"%s\" info in to file.\n", q)
+					fmt.Printf("Create a new \"%s\" info into file.\n", q)
 					return nil
 				},
 			},
@@ -103,19 +103,47 @@ func downloadAudio(url string, filepath, filename string) {
 
 func mappingToCard(resp oxford.Response) []anki.Card {
 	var out []anki.Card
+	if len(resp.Results) == 0 {
+		return out
+	}
 	for _, v := range resp.Results[0].LexicalEntries {
+		if len(v.Entries) == 0 {
+			continue
+		}
 		entry := v.Entries[0]
-		pronuc := entry.Pronunciations[0]
-		sense := entry.Senses[0]
+
+		ipa := "N/A"
+		soundAddr := ""
+		if len(entry.Pronunciations) != 0 {
+			pronuc := entry.Pronunciations[0]
+			ipa = pronuc.PhoneticSpelling
+			soundAddr = pronuc.AudioFile
+		}
+
+		definition := "N/A"
+		example := "N/A"
+
+		if len(entry.Senses) != 0 {
+			sense := entry.Senses[0]
+
+			if len(sense.Definitions) != 0 {
+				definition = sense.Definitions[0]
+			}
+
+			if len(sense.Examples) != 0 {
+				example = sense.Examples[0].Text
+			}
+		}
+
 		c := anki.Card{
 			Text:         v.Text,
 			PartOfSpeech: v.LexicalCategory.Id,
-			IPA:          pronuc.PhoneticSpelling,
+			IPA:          ipa,
 			Sound:        fmt.Sprintf("[sound:%s_%s.mp3]", v.Text, v.LexicalCategory.Id),
 			SoundName:    fmt.Sprintf("%s_%s", v.Text, v.LexicalCategory.Id),
-			SoundAddr:    pronuc.AudioFile,
-			Definition:   sense.Definitions[0],
-			Example:      sense.Examples[0].Text,
+			SoundAddr:    soundAddr,
+			Definition:   definition,
+			Example:      example,
 		}
 		out = append(out, c)
 	}
