@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -36,10 +37,13 @@ func main() {
 						return err
 					}
 					cards := mappingToCard(resp)
+					wg := new(sync.WaitGroup)
+					wg.Add(len(cards) * 2)
 					for _, c := range cards {
-						downloadAudio(c.SoundAddr, ankiMedia, c.SoundName)
-						writeToFile(ankiFile, c.AnkiString())
+						go downloadAudio(c.SoundAddr, ankiMedia, c.SoundName, wg)
+						go writeToFile(ankiFile, c.AnkiString(), wg)
 					}
+					wg.Wait()
 					fmt.Printf("Create a new \"%s\" info into file.\n", q)
 					return nil
 				},
@@ -81,7 +85,8 @@ func queryWordToOxford(id, key, word string) (oxford.Response, error) {
 	return rsp, nil
 }
 
-func downloadAudio(u string, filepath, filename string) {
+func downloadAudio(u string, filepath, filename string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	if _, err := url.Parse(u); err != nil {
 		return
 	}
@@ -155,7 +160,8 @@ func mappingToCard(resp oxford.Response) []anki.Card {
 	return out
 }
 
-func writeToFile(filePath, s string) {
+func writeToFile(filePath, s string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	fileName := time.Now().Format("2006-01-02") + ".txt"
 	fullPath := filepath.Join(filePath, fileName)
 	file, err := os.OpenFile(fullPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
