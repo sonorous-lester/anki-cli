@@ -36,7 +36,7 @@ func main() {
 					if err != nil {
 						return err
 					}
-					cards := mappingToCard(resp)
+					cards := mappingToCards(resp)
 					wg := new(sync.WaitGroup)
 					wg.Add(len(cards) * 2)
 					for _, c := range cards {
@@ -111,7 +111,7 @@ func downloadAudio(u string, filepath, filename string, wg *sync.WaitGroup) {
 	}
 }
 
-func mappingToCard(resp oxford.Response) []anki.Card {
+func mappingToCards(resp oxford.Response) []anki.Card {
 	var out []anki.Card
 	if len(resp.Results) == 0 {
 		return out
